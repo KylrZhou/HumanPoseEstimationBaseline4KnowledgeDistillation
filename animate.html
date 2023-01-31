@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+<title>Animate</title>
+	
+	<style>
+		html{
+			padding: 0px;
+			margin: 0px;
+		}
+		body{
+			padding: 0px;
+			margin: 0px;
+			height: 100%;
+			width: 100%;
+		}
+		#Animation_Area{
+			position: fixed;
+			height: 50vh;
+			width: 100vw;
+			padding: 0px;
+			margin: 0px;
+			top: 0px;
+			left: 0px;
+			background-color: rgb(128, 128, 128);
+		}
+		#Input_Area{
+			position: fixed;
+			height: 50vh;
+			width: 100vw;
+			padding: 0px;
+			margin: 0px;
+			top: 50vh;
+			left: 0px;
+			background-color: rgb(196, 196, 196);
+		}
+		.Out_Frame{
+            position: relative;
+            top: 0px;
+			bottom: 0px;
+        }
+        .Up_Side{
+            position: absolute;
+            top: 0px;
+            background-color: rgb(6, 128, 249);
+        }
+        .Front_Side{
+            position: absolute;
+            background-color: rgb(56, 153, 250);
+        }
+		.Right_Side{
+			position: absolute;
+			background-color: rgb(5, 102, 199);
+		}
+	</style>
+
+</head>
+
+<body>
+	<div id="Animation_Area">
+	</div>
+	<div id="Input_Area">
+		<input type="checkbox" id="1" name="1"><label for="1">1</label>
+		<input type="checkbox" id="2" name="2"><label for="2">2</label>
+		<input type="checkbox" id="3" name="3"><label for="3">3</label>
+		<input type="checkbox" id="4" name="4"><label for="4">4</label>
+		<input type="checkbox" id="5" name="5"><label for="5">5</label>
+		<input type="checkbox" id="6" name="6"><label for="6">6</label>
+		<input type="checkbox" id="7" name="7"><label for="7">7</label>
+		<input type="checkbox" id="8" name="8"><label for="8">8</label>
+		<input type="checkbox" id="9" name="9"><label for="9">9</label>
+		<input type="checkbox" id="10" name="10"><label for="10">10</label>
+		<input type="checkbox" id="11" name="11"><label for="11">11</label>
+		<input type="checkbox" id="12" name="12"><label for="12">12</label>
+		<input type="checkbox" id="13" name="13"><label for="13">13</label>
+		<input type="checkbox" id="14" name="14"><label for="14">14</label>
+		<input type="checkbox" id="15" name="15"><label for="15">15</label>
+		<input type="checkbox" id="16" name="16"><label for="16">16</label>
+		<input type="checkbox" id="17" name="17"><label for="17">17</label>
+		<input type="checkbox" id="18" name="18"><label for="18">18</label>
+	</div>
+</body>
+<script>
+	var Main_Height = window.screen.availHeight;
+	var Main_Width = window.screen.availWidth;
+	console.log(Main_Height,Main_Width);
+	var AA = document.getElementById("Animation_Area");
+	function Frame_Gen(fw,fh,uh,ra,nm) {
+		//Out_Frame Generation
+		var Out_Frame = document.createElement("div");
+		Out_Frame.setAttribute("class", "Out_Frame");
+		Out_Frame.setAttribute("id", "Out_Frame"+String(nm));
+		//Out_Frame Configurations
+		Out_Frame.style.left = nm*40+'px';
+		Out_Frame.style.top = (AA.offsetHeight-fh-uh)/3+'px';
+		//Front Side Configurations
+        var Front_Side = document.createElement("div");
+		Front_Side.setAttribute("class", "Front_Side");
+		Front_Side.setAttribute("id", "Front_Side"+String(nm));
+		Front_Side.style.height = fh+'px';
+		Front_Side.style.width = fw+'px';
+		Front_Side.style.top = uh+'px';
+		//Up Side Configurations
+		var Up_Side = document.createElement("div");
+		Up_Side.setAttribute("class", "Up_Side");
+		Up_Side.setAttribute("id", "Up_Side"+String(nm));
+		Up_Side.style.height = uh+'px';
+		Up_Side.style.width = fw+'px';
+		Up_Side.style.left = uh/2*Math.tan(Math.PI*(ra/180))+'px';
+		Up_Side.style.transform = "skew("+(180-ra)+"deg, 0deg)";
+		//Right Side Configurations
+		var Right_Side = document.createElement("div");
+		Right_Side.setAttribute("class", "Right_Side");
+		Right_Side.setAttribute("id", "Right_Side"+String(nm));
+		Right_Side.style.height = fh+'px';
+		Right_Side.style.width = uh*Math.tan(Math.PI*(ra/180))+'px';
+		Right_Side.style.left = fw+'px';
+		Right_Side.style.top = uh-uh*Math.tan(Math.PI*((90-ra)/180))/2*Math.tan(Math.PI*(ra/180))-1+'px';
+		Right_Side.style.transform = "skew(0deg,"+(90+ra)+"deg)";
+		//Merge
+		Out_Frame.appendChild(Front_Side);
+		Out_Frame.appendChild(Up_Side);
+		Out_Frame.appendChild(Right_Side);
+		//Append
+		AA.appendChild(Out_Frame);
+    }
+	Frame_Gen(25,250,100,20,1);
+	Frame_Gen(25,250,100,20,2);
+</script>
+</html>
