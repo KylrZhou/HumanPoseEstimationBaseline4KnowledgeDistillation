@@ -60,38 +60,77 @@
 	<div id="Animation_Area">
 	</div>
 	<div id="Input_Area">
-		<input type="checkbox" id="1" name="1"><label for="1">1</label>
-		<input type="checkbox" id="2" name="2"><label for="2">2</label>
-		<input type="checkbox" id="3" name="3"><label for="3">3</label>
-		<input type="checkbox" id="4" name="4"><label for="4">4</label>
-		<input type="checkbox" id="5" name="5"><label for="5">5</label>
-		<input type="checkbox" id="6" name="6"><label for="6">6</label>
-		<input type="checkbox" id="7" name="7"><label for="7">7</label>
-		<input type="checkbox" id="8" name="8"><label for="8">8</label>
-		<input type="checkbox" id="9" name="9"><label for="9">9</label>
-		<input type="checkbox" id="10" name="10"><label for="10">10</label>
-		<input type="checkbox" id="11" name="11"><label for="11">11</label>
-		<input type="checkbox" id="12" name="12"><label for="12">12</label>
-		<input type="checkbox" id="13" name="13"><label for="13">13</label>
-		<input type="checkbox" id="14" name="14"><label for="14">14</label>
-		<input type="checkbox" id="15" name="15"><label for="15">15</label>
-		<input type="checkbox" id="16" name="16"><label for="16">16</label>
-		<input type="checkbox" id="17" name="17"><label for="17">17</label>
-		<input type="checkbox" id="18" name="18"><label for="18">18</label>
+		<input type="checkbox" id="1" name="1" onclick="Checkbox_Click(this)"><label for="1">1</label>
+		<input type="checkbox" id="2" name="2" onclick="Checkbox_Click(this)"><label for="2">2</label>
+		<input type="checkbox" id="3" name="3" onclick="Checkbox_Click(this)"><label for="3">3</label>
+		<input type="checkbox" id="4" name="4" onclick="Checkbox_Click(this)"><label for="4">4</label>
+		<input type="checkbox" id="5" name="5" onclick="Checkbox_Click(this)"><label for="5">5</label>
+		<input type="checkbox" id="6" name="6" onclick="Checkbox_Click(this)"><label for="6">6</label>
+		<input type="checkbox" id="7" name="7" onclick="Checkbox_Click(this)"><label for="7">7</label>
+		<input type="checkbox" id="8" name="8" onclick="Checkbox_Click(this)"><label for="8">8</label>
+		<input type="checkbox" id="9" name="9" onclick="Checkbox_Click(this)"><label for="9">9</label>
+		<input type="checkbox" id="10" name="10" onclick="Checkbox_Click(this)"><label for="10">10</label>
+		<input type="checkbox" id="11" name="11" onclick="Checkbox_Click(this)"><label for="11">11</label>
+		<input type="checkbox" id="12" name="12" onclick="Checkbox_Click(this)"><label for="12">12</label>
+		<input type="checkbox" id="13" name="13" onclick="Checkbox_Click(this)"><label for="13">13</label>
+		<input type="checkbox" id="14" name="14" onclick="Checkbox_Click(this)"><label for="14">14</label>
+		<input type="checkbox" id="15" name="15" onclick="Checkbox_Click(this)"><label for="15">15</label>
+		<input type="checkbox" id="16" name="16" onclick="Checkbox_Click(this)"><label for="16">16</label>
+		<input type="checkbox" id="17" name="17" onclick="Checkbox_Click(this)"><label for="17">17</label>
+		<input type="checkbox" id="18" name="18" onclick="Checkbox_Click(this)"><label for="18">18</label>
+        <input type="checkbox" id="19" name="19" onclick="Checkbox_Click(this)"><label for="19">19</label>
+		<input type="checkbox" id="20" name="20" onclick="Checkbox_Click(this)"><label for="20">20</label>
+		<input type="checkbox" id="21" name="21" onclick="Checkbox_Click(this)"><label for="21">21</label>
+		<input type="checkbox" id="22" name="22" onclick="Checkbox_Click(this)"><label for="22">22</label>
 	</div>
 </body>
 <script>
-	var Main_Height = window.screen.availHeight;
-	var Main_Width = window.screen.availWidth;
-	console.log(Main_Height,Main_Width);
+    //Meta Object Obtaining
+	const Main_Height = window.screen.availHeight;
+	const Main_Width = window.screen.availWidth;
+    var Cntr = 0;//How Many Layers Added in Total
+    var Order = [];//Layer Order
+    var Ordered_Left = [];//Left Value for Each Layer in Order
+    var Ordered_Width = [];//Width Value for Each Layer in Order
+    var GAP = 100;
+    var Total_Length = 0;
+    //Main Frame Obataining
 	var AA = document.getElementById("Animation_Area");
-	function Frame_Gen(fw,fh,uh,ra,nm) {
+	function Frame_Gen(fw,fh,uh,ra,nm){
+        //Check if New Added Layer is Last One
+        if(Order.length>=nm){//Add Layer in the Middle
+            //rearrange needed
+        }
+        else if(Order.length!=0){//Add Layer to the Tail
+            Order.push(nm);
+            Ordered_Width.push(uh*Math.tan(Math.PI*(ra/180)));
+            Ordered_Left.push(Ordered_Left[nm-2]+GAP+Ordered_Width[nm-2]);
+            Total_Length += GAP+Ordered_Width[nm-1]+fw;
+            var All_Layers = document.getElementsByClassName("Out_Frame");
+            var tmpcnt = 0;
+            for(var i in All_Layers){
+                if(tmpcnt == 0){
+                    Ordered_Left[tmpcnt] = (Main_Width-Total_Length)/2;
+                    i.style.left = Ordered_Left[tmpcnt];
+                }
+                else{
+                    Ordered_Left[tmpcnt] = Ordered_Left[tmpcnt-1]+Ordered_Width[tmpcnt-1]+GAP;
+                    i.style.left = Ordered_Left[tmpcnt];
+                }
+            }
+        }
+        else{//Initial Layer
+            Order.push(1);
+            Ordered_Width.push(uh*Math.tan(Math.PI*(ra/180)));
+            Ordered_Left.push((Main_Width-Ordered_Width[nm-1])/2);
+            Total_Length += Ordered_Width[nm-1]+fw;
+        }
 		//Out_Frame Generation
 		var Out_Frame = document.createElement("div");
 		Out_Frame.setAttribute("class", "Out_Frame");
 		Out_Frame.setAttribute("id", "Out_Frame"+String(nm));
 		//Out_Frame Configurations
-		Out_Frame.style.left = nm*40+'px';
+		Out_Frame.style.left = String(Ordered_Left[nm-1])+'px';
 		Out_Frame.style.top = (AA.offsetHeight-fh-uh)/3+'px';
 		//Front Side Configurations
         var Front_Side = document.createElement("div");
@@ -106,14 +145,14 @@
 		Up_Side.setAttribute("id", "Up_Side"+String(nm));
 		Up_Side.style.height = uh+'px';
 		Up_Side.style.width = fw+'px';
-		Up_Side.style.left = uh/2*Math.tan(Math.PI*(ra/180))+'px';
+		Up_Side.style.left = String(Ordered_Width[nm-1]/2)+'px';
 		Up_Side.style.transform = "skew("+(180-ra)+"deg, 0deg)";
 		//Right Side Configurations
 		var Right_Side = document.createElement("div");
 		Right_Side.setAttribute("class", "Right_Side");
 		Right_Side.setAttribute("id", "Right_Side"+String(nm));
 		Right_Side.style.height = fh+'px';
-		Right_Side.style.width = uh*Math.tan(Math.PI*(ra/180))+'px';
+		Right_Side.style.width = String(Ordered_Width[nm-1])+'px';
 		Right_Side.style.left = fw+'px';
 		Right_Side.style.top = uh-uh*Math.tan(Math.PI*((90-ra)/180))/2*Math.tan(Math.PI*(ra/180))-1+'px';
 		Right_Side.style.transform = "skew(0deg,"+(90+ra)+"deg)";
@@ -123,8 +162,21 @@
 		Out_Frame.appendChild(Right_Side);
 		//Append
 		AA.appendChild(Out_Frame);
+        //Other Calc
+        Ordered_Width[nm-1]+=fw;
     }
-	Frame_Gen(25,250,100,20,1);
-	Frame_Gen(25,250,100,20,2);
+    function Checkbox_Click(slf){
+        if(slf.checked == true){
+            Cntr+=1;
+            Frame_Gen(25,250,100,20,Cntr);
+        }
+        else{
+            var Removing_Element = document.getElementById("Out_Frame"+slf.id);
+            Removing_Element.remove();
+        }
+    }
+    function Position_Update(){
+        //
+    }
 </script>
 </html>
