@@ -102,28 +102,20 @@
             //rearrange needed
         }
         else if(Order.length!=0){//Add Layer to the Tail
+			//Add New Layer Information except Left
             Order.push(nm);
             Ordered_Width.push(uh*Math.tan(Math.PI*(ra/180)));
+			//Total_Length Update
+            Total_Length = Total_Length+GAP+Ordered_Width[nm-1]+fw;
+			Position_Update();
+			//Push New Layer Left Information
             Ordered_Left.push(Ordered_Left[nm-2]+GAP+Ordered_Width[nm-2]);
-            Total_Length += GAP+Ordered_Width[nm-1]+fw;
-            var All_Layers = document.getElementsByClassName("Out_Frame");
-            var tmpcnt = 0;
-            for(var i in All_Layers){
-                if(tmpcnt == 0){
-                    Ordered_Left[tmpcnt] = (Main_Width-Total_Length)/2;
-                    i.style.left = Ordered_Left[tmpcnt];
-                }
-                else{
-                    Ordered_Left[tmpcnt] = Ordered_Left[tmpcnt-1]+Ordered_Width[tmpcnt-1]+GAP;
-                    i.style.left = Ordered_Left[tmpcnt];
-                }
-            }
         }
         else{//Initial Layer
-            Order.push(1);
+            Order.push(nm);
             Ordered_Width.push(uh*Math.tan(Math.PI*(ra/180)));
-            Ordered_Left.push((Main_Width-Ordered_Width[nm-1])/2);
-            Total_Length += Ordered_Width[nm-1]+fw;
+            Ordered_Left.push((Main_Width-Ordered_Width[nm-1]-fw)/2);
+            Total_Length = Total_Length+Ordered_Width[nm-1]+fw;
         }
 		//Out_Frame Generation
 		var Out_Frame = document.createElement("div");
@@ -172,11 +164,34 @@
         }
         else{
             var Removing_Element = document.getElementById("Out_Frame"+slf.id);
+			for(var i=slf.id-1;i<Order.length-1;i++){
+				Order[i]=Order[i+1];
+				Ordered_Left[i]=Ordered_Left[i+1];
+				Ordered_Width[i]=Ordered_Width[i+1];
+            }
+            Total_Length = Total_Length-GAP-Ordered_Width[slf.id-1];
+			Order.pop();
+			Ordered_Left.pop();
+			Ordered_Width.pop();
             Removing_Element.remove();
+			Position_Update();
         }
     }
+	//Updating All Layers' Position
     function Position_Update(){
-        //
+		//Obtain All the Layers
+        var All_Layers = document.getElementsByClassName("Out_Frame");
+		//Updating Existed Layers Information
+        for(var i=0;i<All_Layers.length;i++){
+            if(i == 0){
+                Ordered_Left[i] = (Main_Width-Total_Length+Ordered_Width[0])/2;
+                All_Layers[i].style.left = Ordered_Left[i]+'px';
+            }
+            else{
+                Ordered_Left[i] = Ordered_Left[i-1]+Ordered_Width[i-1]+GAP;
+                All_Layers[i].style.left = Ordered_Left[i]+'px';
+            }
+        }
     }
 </script>
 </html>
