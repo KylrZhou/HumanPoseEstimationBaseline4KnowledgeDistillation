@@ -55,23 +55,73 @@
 		
 		.Input_Unit{
 			position: relative;
-			left: 50px;
-			top: 100px;
+			left: 5vw;
+			top: 5vh;
 		}
-		.Data_Frame{
+		.Input_Background{
 			position: absolute;
-			height: 50px;
-			width: 50px;
-			background-color: rgb(225,225,100);
+			width: 14vh;
+			border-radius: 2vh;
+			background-color: rgb(56, 153, 250);
+			border: 2px solid rgb(51, 102, 153);
 		}
-		.Layer_Add{
-			left: 65px;
-			top: 14px;
-			position: absolute;
+		.Input_Title{
+			display: flex;           
+			display: -webkit-flex;            
+			justify-content: center;            
+			align-items: center;
+			margin: 0px;
+			padding: 0px;
+			width: 14vh;
+			height: 4vh;
+			border-top-left-radius: 2vh;
+			border-top-right-radius: 2vh;
+			background-color: rgb(6, 128, 249);
+			border-bottom: 1.5px solid rgb(51, 102, 153);
 		}
-		.Layer_Del{
-			left: 0px;
+		.Title_Text{
 			position: absolute;
+			width: 12h;
+			background:none;
+			border: none;
+			font-size: 2vh;
+			font-family: Verdana, sans-serif;
+			color: rgb(255,255,255);
+			text-align:center;
+		}
+		.Input_Details{
+			height:3vh;
+			display: flex;           
+			display: -webkit-flex;            
+			align-items: center;
+			background:none;
+			border-bottom: 1.5px solid rgb(51, 102, 153);
+		}
+		.Input_Name{
+			font-size: 1.5vh;
+			font-family: Verdana, sans-serif;
+			color: rgb(255,255,255);
+			padding-left: 1.5vh;
+			width: 10vh;
+			margin: auto;
+		}
+		.Input_Text{
+			width: 80%;
+			background:none;
+			border: none;
+			font-size: 1.5vh;
+			font-family: Verdana, sans-serif;
+			color: rgb(255,255,255);
+			text-align:left;
+		}
+		.Input_Tail{
+			display: flex;
+			display: -webkit-flex;            
+			justify-content: center;
+			align-items: center;
+			height: 2vh;
+			font-family: Verdana, sans-serif;
+			color: rgb(255,255,255);
 		}
 	</style>
 
@@ -81,14 +131,19 @@
 	<div id="Animation_Area">
 	</div>
 	<div id="Input_Area">
-		<div class="Input_Unit" id="0">
-			<div class="Data_Frame" id="0"></div>
-			<button class="Layer_Add" id="0" onclick="Add_Layer(this)">Add</button>
-			<button class="Layer_Del" id="0" onclick="Del_Layer(this)">Del</button>
+		<div class="Input_Unit" id="Unit0">
+			<div class="Input_Background" id="Bk0">
+				<div class="Input_Title" id="It0"><input type="text" class="Title_Text" placeholder="Layer Name" value="Input Size"></input></div>
+				<div class="Input_Details" id="Iw"><div class="Input_Name">Width:</div><input type="text" class="Input_Text" value=256></input></div>
+				<div class="Input_Details" id="Ih"><div class="Input_Name">Height:</div><input type="text" class="Input_Text" value=192></div>
+				<div class="Input_Tail" id="Tail0">Layer 0</div>
+			</div>
 		</div>
 	</div>
 </body>
 <script>
+	var tmp = document.getElementById("Bk0");
+	console.log(tmp.offsetWidth);
 	var Input_Pixel = 256;
 	var Mctr = 0;
 	var AA = document.getElementById("Animation_Area");
