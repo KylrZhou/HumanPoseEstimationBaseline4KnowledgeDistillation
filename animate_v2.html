@@ -162,6 +162,13 @@
 	var Inp = [];
 	var Anima = [];
 	function Button_Gen(num) {
+		if (Inp[num].type == 'Conv') {
+            Inp[num].Filter_Num = document.getElementById("Filter_Num_Input_Text"+String(num)).value;
+			Inp[num].Kernel_Size = document.getElementById("Kernel_Size_Input_Text"+String(num)).value;
+			Inp[num].Stride = document.getElementById("Stride_Input_Text"+String(num)).value;
+			Inp[num].Padding = document.getElementById("Padding_Input_Text"+String(num)).value;
+			console.log(Inp[num].Filter_Num);
+        }
 		Anima[num] = new Node(Inp[num].Width,Inp[num].Height,100+100*num,Inp[num].num,Inp[num].type);
 		Anima[num].Gen();
 	}
@@ -176,6 +183,8 @@
 			this.num=n;
 			this.namae=namae;
 			if (tp=="Conv") {
+				this.Width = 200;
+				this.Height = 168;
 				num0conv += 1;
 				this.D_Title=tp+String(num0conv);
 				this.Filter_Num=p1;
