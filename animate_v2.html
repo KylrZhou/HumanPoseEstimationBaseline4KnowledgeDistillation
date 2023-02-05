@@ -55,7 +55,7 @@
 		
 		.Input_Unit{
 			position: relative;
-			left: 5vw;
+			left: 5vh;
 			top: 5vh;
 		}
 		.Input_Background{
@@ -81,7 +81,7 @@
 		}
 		.Title_Text{
 			position: absolute;
-			width: 12h;
+			width: 12vh;
 			background:none;
 			border: none;
 			font-size: 2vh;
@@ -101,7 +101,7 @@
 			font-size: 1.5vh;
 			font-family: Verdana, sans-serif;
 			color: rgb(255,255,255);
-			padding-left: 1.5vh;
+			padding-left: 1vh;
 			width: 10vh;
 			margin: auto;
 		}
@@ -123,6 +123,10 @@
 			font-family: Verdana, sans-serif;
 			color: rgb(255,255,255);
 		}
+		.Btn{
+			position: absolute;
+			top: 150px;
+		}
 	</style>
 
 </head>
@@ -131,6 +135,7 @@
 	<div id="Animation_Area">
 	</div>
 	<div id="Input_Area">
+<!--
 		<div class="Input_Unit" id="Unit0">
 			<div class="Input_Background" id="Bk0">
 				<div class="Input_Title" id="It0"><input type="text" class="Title_Text" placeholder="Layer Name" value="Input Size"></input></div>
@@ -139,23 +144,152 @@
 				<div class="Input_Tail" id="Tail0">Layer 0</div>
 			</div>
 		</div>
+-->
 	</div>
 </body>
 <script>
-	var tmp = document.getElementById("Bk0");
-	console.log(tmp.offsetWidth);
-	var Input_Pixel = 256;
+	var num0conv = 0;
+	var num0pooling = 0;
 	var Mctr = 0;
-	var AA = document.getElementById("Animation_Area");
+	var Input_Pixel = 256;
 	const Main_Height = window.screen.availHeight;
 	const Main_Width = window.screen.availWidth;
 	var Default_Height = Main_Height*0.20;
 	var Base_Line = Main_Height/2*0.55;
 	var Default_Rotate_Angle = 25;
+	var IA = document.getElementById("Input_Area");
+	var AA = document.getElementById("Animation_Area");
+	var Inp = [];
+	var Anima = [];
+	function Button_Gen(num) {
+		Anima[num] = new Node(Inp[num].Width,Inp[num].Height,100+100*num,Inp[num].num,Inp[num].type);
+		Anima[num].Gen();
+	}
+	function Butten_Add(num) {
+		Inp[num] = new Input("Conv",32,3,1,1,25,num,0);
+		Inp[num].Gen();
+    }
+	class Input{
+		constructor(tp,p1,p2,p3,p4,l,n,namae){
+			this.type=tp;
+			this.l=l;
+			this.num=n;
+			this.namae=namae;
+			if (tp=="Conv") {
+				num0conv += 1;
+				this.D_Title=tp+String(num0conv);
+				this.Filter_Num=p1;
+				this.Kernel_Size=p2;
+				this.Stride=p3;
+				this.Padding=p4;
+				this.label=[];
+				this.label[0]='Filter_Num';
+				this.label[1]='Kernel_Size';
+				this.label[2]='Stride';
+				this.label[3]='Padding';
+				this.dft=[];
+				this.dft[0]=NaN;
+				this.dft[1]=3;
+				this.dft[2]=1;
+				this.dft[3]=0;
+            }
+			else if (tp=="Pooling") {
+				num0pooling+=0;
+				this.Kernel_Size=[this.num];
+				this.D_Title=tp+String(num0pooling);
+                this.Kernel_Size=p1;
+				this.Stride=p2;
+				this.Padding=p3;
+				this.label=[];
+				this.label[0]='Kernel_Size';
+				this.label[1]='Stride';
+				this.label[2]='Padding';
+				this.dft=[];
+				this.dft[0]=2;
+				this.dft[1]=1;
+				this.dft[2]=0;
+            }
+			else if (tp=="Input") {
+				this.Kernel_Size=1;
+				this.D_Title="Input Size";
+				this.Width=p1;
+				this.Height=p2;
+				this.label=[];
+				this.label[0]='Width';
+				this.label[1]='Height';
+				this.dft=[];
+				this.dft[0]=256;
+				this.dft[1]=192;
+			}
+			else{
+				alert("Error Input");
+			}
+		}
+		Gen(){
+			var Iu = document.createElement("div");
+			Iu.setAttribute("class","Input_Unit");
+			Iu.setAttribute("id","Unit"+String(this.num));
+			Iu.style.left = String(this.l)+'vh';
+			var Bk = document.createElement("div");
+			Bk.setAttribute("class","Input_Background");
+			Bk.setAttribute("id","BK"+String(this.num));
+			var It = document.createElement("div");
+			It.setAttribute("class","Input_Title");
+			It.setAttribute("id","It"+String(this.num));
+			var input = document.createElement("input");
+			input.setAttribute("class","Title_Text");
+			input.setAttribute("id","Title_Text"+String(this.num));
+			input.type = "text";
+			input.placeholder = "Layer Name";
+			input.value = this.D_Title;
+			It.appendChild(input);
+			Bk.appendChild(It);
+			for (var i=0;i<this.label.length;i++) {
+                var p = document.createElement("div");
+				p.setAttribute("class","Input_Details");
+				p.setAttribute("id",this.label[i]+String(this.num));
+				var pi = document.createElement("div");
+				pi.setAttribute("class","Input_Name");
+				pi.setAttribute("id",this.label[i]+"_Input_Name"+String(this.num));
+				pi.innerHTML = this.label[i];
+				p.appendChild(pi);
+				var pv = document.createElement("input");
+				pv.setAttribute("class","Input_Text");
+				pv.setAttribute("id",this.label[i]+"_Input_Text"+String(this.num));
+				pv.value=this.dft[i];
+				p.appendChild(pv);
+				Bk.appendChild(p);
+            }
+			var Tail = document.createElement("div");
+			Tail.setAttribute("class","Input_Tail");
+			Tail.setAttribute("id","Tail"+String(this.num));
+			Tail.innerHTML = "Layer "+String(this.num);
+			Bk.appendChild(Tail);
+			var Btn_Gen = document.createElement("button");
+			Btn_Gen.innerHTML = "Gen()^";
+			Btn_Gen.setAttribute("class", "Btn");
+			Btn_Gen.setAttribute("id","Btn_Gen"+String(this.num));
+			Btn_Gen.style.top = String(this.label.length*3+6+2)+'vh';
+			var orderoflayer=this.num;
+			Btn_Gen.onclick = function() {Button_Gen(orderoflayer)};
+			var Btn_Add = document.createElement("button");
+			Btn_Add.innerHTML = "Add()->";
+			Btn_Add.setAttribute("class", "Btn");
+			Btn_Add.setAttribute("id","Btn_Add"+String(this.num));
+			Btn_Add.style.top = String(this.label.length*3+6+5)+'vh';
+			Btn_Add.onclick = function() {Butten_Add(orderoflayer+1)};
+			Iu.appendChild(Btn_Gen);
+			Iu.appendChild(Btn_Add);
+			Iu.appendChild(Bk);
+			IA.appendChild(Iu);
+		}
+	}
     class Node{
-		constructor(px,l,idn,tp){
+		constructor(wpx,hpx,l,idn,tp){
+			this.wpx=wpx;
+			this.hpx=hpx;
 			this.fw=25;//Front Side Width
-			this.fh=Default_Height*(px/Input_Pixel);//Front Side Height
+			this.fh=Default_Height*(hpx/Inp[0].Height);//Front Side Height
 			this.uh=this.fh/2;//Up Side Height
 			this.ra=Default_Rotate_Angle;//Rotate Angle
 			this.l=l;//left
@@ -208,19 +342,7 @@
 			Removing_Element.remove();
 		}
 	}
-	class Proc{
-		constructor(tp,ks,nf,st,pd){
-			this.tp=tp;//Process Type
-			this.ks=ks;//Kernel Size
-			this.nf=nf;//Number of Filters
-			this.st=st;//Stride
-			this.pd=pd;//Padding
-		}
-	}
-	var G = [];
-	G[0] = new Node(256,100,1,'conv');
-	G[0].Gen();
-	G[1] = new Node(200,140,2,'conv');
-	G[1].Gen();
+	Inp[0] = new Input("Input",256,192,0,0,5,0,0);
+	Inp[0].Gen();
 </script>
 </html>
