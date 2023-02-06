@@ -135,25 +135,17 @@
 	<div id="Animation_Area">
 	</div>
 	<div id="Input_Area">
-<!--
-		<div class="Input_Unit" id="Unit0">
-			<div class="Input_Background" id="Bk0">
-				<div class="Input_Title" id="It0"><input type="text" class="Title_Text" placeholder="Layer Name" value="Input Size"></input></div>
-				<div class="Input_Details" id="Iw"><div class="Input_Name">Width:</div><input type="text" class="Input_Text" value=256></input></div>
-				<div class="Input_Details" id="Ih"><div class="Input_Name">Height:</div><input type="text" class="Input_Text" value=192></div>
-				<div class="Input_Tail" id="Tail0">Layer 0</div>
-			</div>
-		</div>
--->
 	</div>
 </body>
 <script>
 	var num0conv = 0;
 	var num0pooling = 0;
-	var Mctr = 0;
-	var Input_Pixel = 256;
+	var Mctr = -1;
+	var GAP = 100;
+	var Total_Length = 0;
 	const Main_Height = window.screen.availHeight;
 	const Main_Width = window.screen.availWidth;
+	var WidthPLayer = Main_Width/1000;
 	var Default_Height = Main_Height*0.20;
 	var Base_Line = Main_Height/2*0.55;
 	var Default_Rotate_Angle = 25;
@@ -161,30 +153,80 @@
 	var AA = document.getElementById("Animation_Area");
 	var Inp = [];
 	var Anima = [];
-	function Button_Gen(num) {
-		if (Inp[num].type == 'Conv') {
-            Inp[num].Filter_Num = document.getElementById("Filter_Num_Input_Text"+String(num)).value;
-			Inp[num].Kernel_Size = document.getElementById("Kernel_Size_Input_Text"+String(num)).value;
-			Inp[num].Stride = document.getElementById("Stride_Input_Text"+String(num)).value;
-			Inp[num].Padding = document.getElementById("Padding_Input_Text"+String(num)).value;
-			console.log(Inp[num].Filter_Num);
+	function Button_Gen(namae) {
+		if (Inp[namae].type == 'Conv') {
+            Inp[namae].Filter_Num = document.getElementById("Filter_Num_Input_Text"+String(Inp[namae].num)).value;
+			Inp[namae].Kernel_Size = document.getElementById("Kernel_Size_Input_Text"+String(Inp[namae].num)).value;
+			Inp[namae].Stride = document.getElementById("Stride_Input_Text"+String(Inp[namae].num)).value;
+			Inp[namae].Padding = document.getElementById("Padding_Input_Text"+String(Inp[namae].num)).value;
+			Inp[namae].Width  = ((Inp[namae].Width-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
+			Inp[namae].Height  = ((Inp[namae].Height-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
+			console.log(Inp[namae].Width,Inp[namae].Height);
         }
-		Anima[num] = new Node(Inp[num].Width,Inp[num].Height,100+100*num,Inp[num].num,Inp[num].type);
-		Anima[num].Gen();
+		Anima[namae] = new Node(Inp[namae].Width,Inp[namae].Height,Inp[namae].Filter_Num,100+100*namae,Inp[namae].num,namae,Inp[namae].type);
+		Position_Update();
+		Anima[namae].Gen();
 	}
-	function Butten_Add(num) {
-		Inp[num] = new Input("Conv",32,3,1,1,25,num,0);
-		Inp[num].Gen();
+	function Butten_Add(namae) {
+		Inp[namae] = new Input("Conv",32,3,1,1,20*namae+5,namae);
+		Inp[namae].Gen();
     }
+	function Conv_Calc(pw,w,ks,s,p) {
+		if(pw>=ks&&ph>=ks){
+			w = ((pw-ks+2*p)/s)+1;
+			return w;
+		}
+		else{
+			alert("Unacceptable Kernel Size");
+			return -1;
+		}
+	}
+	function Position_Update(){
+		//Updating Existed Layers Information
+        for(var i=0;i<Anima.length;i++){
+			var Updating_Layer = document.getElementById("Out_Frame"+String(Anima[i].idn));
+            if(i == 0){
+                Anima[i].l = (Main_Width-Total_Length+Anima[i].fw)/2;
+                //All_Layers[i].style.left = Ordered_Left[i]+'px';
+            }
+            else{
+				Anima[i].l = Anima[i-1].l+Anima[i-1].fw+GAP;
+				//All_Layers[i].style.left = Ordered_Left[i]+'px';
+            }
+			if(Updating_Layer!=null){
+				Updating_Layer.style.left = Anima[i].l+'px';
+			}
+        }
+    }
+	function Width_Deter(filter){
+		if(filter<10){
+			filter = 1;
+		}
+		else if(filter<100){
+			filter = filter/100*5;
+		}
+		else if(filter<1000){
+			filter = filter/1000*5+5;
+		}
+		else if(filter<10000){
+			filter = filter/1000+10;
+		}
+		else{
+			alert("Number of Filter Over Ceiling");
+			return;
+		}
+		return filter*WidthPLayer;
+	}
 	class Input{
-		constructor(tp,p1,p2,p3,p4,l,n,namae){
+		constructor(tp,p1,p2,p3,p4,l,namae){
+			Mctr += 1;
 			this.type=tp;
 			this.l=l;
-			this.num=n;
+			this.num=Mctr;
 			this.namae=namae;
 			if (tp=="Conv") {
-				this.Width = 200;
-				this.Height = 168;
+				this.Width = Inp[this.namae-1].Width;
+				this.Height = Inp[this.namae-1].Height;
 				num0conv += 1;
 				this.D_Title=tp+String(num0conv);
 				this.Filter_Num=p1;
@@ -197,7 +239,7 @@
 				this.label[2]='Stride';
 				this.label[3]='Padding';
 				this.dft=[];
-				this.dft[0]=NaN;
+				this.dft[0]=null;
 				this.dft[1]=3;
 				this.dft[2]=1;
 				this.dft[3]=0;
@@ -219,7 +261,7 @@
 				this.dft[2]=0;
             }
 			else if (tp=="Input") {
-				this.Kernel_Size=1;
+				this.Filter_Num=1;
 				this.D_Title="Input Size";
 				this.Width=p1;
 				this.Height=p2;
@@ -279,14 +321,14 @@
 			Btn_Gen.setAttribute("class", "Btn");
 			Btn_Gen.setAttribute("id","Btn_Gen"+String(this.num));
 			Btn_Gen.style.top = String(this.label.length*3+6+2)+'vh';
-			var orderoflayer=this.num;
-			Btn_Gen.onclick = function() {Button_Gen(orderoflayer)};
+			var order0layer = this.namae;
+			Btn_Gen.onclick = function() {Button_Gen(order0layer)};
 			var Btn_Add = document.createElement("button");
 			Btn_Add.innerHTML = "Add()->";
 			Btn_Add.setAttribute("class", "Btn");
 			Btn_Add.setAttribute("id","Btn_Add"+String(this.num));
 			Btn_Add.style.top = String(this.label.length*3+6+5)+'vh';
-			Btn_Add.onclick = function() {Butten_Add(orderoflayer+1)};
+			Btn_Add.onclick = function() {Butten_Add(order0layer+1)};
 			Iu.appendChild(Btn_Gen);
 			Iu.appendChild(Btn_Add);
 			Iu.appendChild(Bk);
@@ -294,16 +336,18 @@
 		}
 	}
     class Node{
-		constructor(wpx,hpx,l,idn,tp){
+		constructor(wpx,hpx,filter,l,idn,namae,tp){
 			this.wpx=wpx;
 			this.hpx=hpx;
-			this.fw=25;//Front Side Width
+			this.fw=Width_Deter(filter);//Front Side Width
+			Total_Length += this.fw;
 			this.fh=Default_Height*(hpx/Inp[0].Height);//Front Side Height
 			this.uh=this.fh/2;//Up Side Height
 			this.ra=Default_Rotate_Angle;//Rotate Angle
 			this.l=l;//left
 			this.t=Base_Line-this.uh-this.fh/2;//top
 			this.idn=idn;//ID Number
+			this.namae=namae;//Order Number
 			this.tp=tp;//Process Type
 		}
 		Gen(){
@@ -351,7 +395,7 @@
 			Removing_Element.remove();
 		}
 	}
-	Inp[0] = new Input("Input",256,192,0,0,5,0,0);
+	Inp[0] = new Input("Input",256,192,0,0,5,0);
 	Inp[0].Gen();
 </script>
 </html>
