@@ -25,6 +25,7 @@
 			background-color: rgb(128, 128, 128);
 		}
 		#Input_Area{
+			overflow-x: scroll;
 			position: fixed;
 			height: 50vh;
 			width: 100vw;
@@ -142,6 +143,7 @@
 	var num0pooling = 0;
 	var Mctr = -1;
 	var GAP = 100;
+	var GAPfIU = 20;
 	var Total_Length = 0;
 	const Main_Height = window.screen.availHeight;
 	const Main_Width = window.screen.availWidth;
@@ -156,25 +158,40 @@
 	function Button_Gen(namae) {
 		if (Inp[namae].type == 'Conv') {
             Inp[namae].Filter_Num = document.getElementById("Filter_Num_Input_Text"+String(Inp[namae].num)).value;
-			Inp[namae].Kernel_Size = document.getElementById("Kernel_Size_Input_Text"+String(Inp[namae].num)).value;
-			Inp[namae].Stride = document.getElementById("Stride_Input_Text"+String(Inp[namae].num)).value;
-			Inp[namae].Padding = document.getElementById("Padding_Input_Text"+String(Inp[namae].num)).value;
-			Inp[namae].Width  = ((Inp[namae].Width-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
-			Inp[namae].Height  = ((Inp[namae].Height-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
-			console.log(Inp[namae].Width,Inp[namae].Height);
+			Inp[namae].Kernel_Size = parseInt(document.getElementById("Kernel_Size_Input_Text"+String(Inp[namae].num)).value);
+			Inp[namae].Stride = parseInt(document.getElementById("Stride_Input_Text"+String(Inp[namae].num)).value);
+			Inp[namae].Padding = parseInt(document.getElementById("Padding_Input_Text"+String(Inp[namae].num)).value);
+			Inp[namae].Width  = Conv_Calc(Inp[namae].Width,Inp[namae].Kernel_Size,Inp[namae].Stride,Inp[namae].Padding);
+			//((Inp[namae].Width-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
+			Inp[namae].Height  = Conv_Calc(Inp[namae].Height,Inp[namae].Kernel_Size,Inp[namae].Stride,Inp[namae].Padding);
+			//((Inp[namae].Height-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
         }
 		Anima[namae] = new Node(Inp[namae].Width,Inp[namae].Height,Inp[namae].Filter_Num,100+100*namae,Inp[namae].num,namae,Inp[namae].type);
-		Position_Update();
 		Anima[namae].Gen();
+		Position_Update();
 	}
 	function Butten_Add(namae) {
-		Inp[namae] = new Input("Conv",32,3,1,1,20*namae+5,namae);
-		Inp[namae].Gen();
+		if (Inp[namae]==undefined) {
+			Inp[namae] = new Input("Conv",32,3,1,1,namae);
+			Inp[namae].Gen();
+        }
+		else{
+			Inp.splice(namae,0,new Input("Conv",32,3,1,1,namae));
+			Inp[namae].Gen();
+			Position_Update_IU(namae+1);
+			Anima.splice(namae,0,0);
+		}
     }
-	function Conv_Calc(pw,w,ks,s,p) {
-		if(pw>=ks&&ph>=ks){
-			w = ((pw-ks+2*p)/s)+1;
-			return w;
+	function Butten_Del(namae) {
+        Anima[namae].Delete();
+		Position_Update();
+		Inp[namae].Delete();
+		Position_Update_IU(namae);
+    }
+	function Conv_Calc(pw,ks,s,p) {
+		if(pw>=ks){
+			pw = ((pw-ks+2*p)/s)+1;
+			return pw;
 		}
 		else{
 			alert("Unacceptable Kernel Size");
@@ -182,20 +199,49 @@
 		}
 	}
 	function Position_Update(){
+		if (Total_Length>=Main_Width*0.9) {
+			var tmp_times = 1;
+            var tmp_Length = Total_Length;
+			var tmp_GAP = 0;
+            while (tmp_Length>=Main_Width*0.9) {
+				tmp_Length = 0;
+				tmp_times -= 0.05;
+				tmp_GAP = GAP*tmp_times;
+				for (var i=0;i<Anima.length;i++) {
+                    tmp_Length += Anima[i].fw+tmp_GAP;
+                }
+            }
+			Total_Length = tmp_Length;
+			GAP = tmp_GAP;
+        }
 		//Updating Existed Layers Information
         for(var i=0;i<Anima.length;i++){
 			var Updating_Layer = document.getElementById("Out_Frame"+String(Anima[i].idn));
             if(i == 0){
                 Anima[i].l = (Main_Width-Total_Length+Anima[i].fw)/2;
-                //All_Layers[i].style.left = Ordered_Left[i]+'px';
             }
             else{
 				Anima[i].l = Anima[i-1].l+Anima[i-1].fw+GAP;
-				//All_Layers[i].style.left = Ordered_Left[i]+'px';
-            }
+				if (Anima[i].wpx != Conv_Calc(Anima[i-1].wpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding)) {
+					console.log(Anima[i].wpx);
+					Anima[i].wpx = Conv_Calc(Anima[i-1].wpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding);
+					Anima[i].hpx = Conv_Calc(Anima[i-1].hpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding);
+					console.log(Anima[i].wpx);
+					Updating_Layer.remove();
+					Anima[i].Gen();
+					Updating_Layer = document.getElementById("Out_Frame"+String(Anima[i].idn));
+                }
+			}
 			if(Updating_Layer!=null){
 				Updating_Layer.style.left = Anima[i].l+'px';
 			}
+        }
+    }
+	function Position_Update_IU(namae) {
+        for (var i=namae;i<Inp.length;i++) {
+			var Updating_Layer_IU = document.getElementById("Unit"+String(Inp[i].num));
+            Inp[i].l = Inp[i-1].l+GAPfIU;
+			Updating_Layer_IU.style.left = Inp[i].l+'vh';
         }
     }
 	function Width_Deter(filter){
@@ -218,13 +264,13 @@
 		return filter*WidthPLayer;
 	}
 	class Input{
-		constructor(tp,p1,p2,p3,p4,l,namae){
+		constructor(tp,p1,p2,p3,p4,namae){
 			Mctr += 1;
 			this.type=tp;
-			this.l=l;
 			this.num=Mctr;
 			this.namae=namae;
 			if (tp=="Conv") {
+				this.l=Inp[this.namae-1].l+GAPfIU;
 				this.Width = Inp[this.namae-1].Width;
 				this.Height = Inp[this.namae-1].Height;
 				num0conv += 1;
@@ -245,6 +291,7 @@
 				this.dft[3]=0;
             }
 			else if (tp=="Pooling") {
+				this.l=Inp[this.namae-1].l+GAPfIU;
 				num0pooling+=0;
 				this.Kernel_Size=[this.num];
 				this.D_Title=tp+String(num0pooling);
@@ -261,6 +308,7 @@
 				this.dft[2]=0;
             }
 			else if (tp=="Input") {
+				this.l=5;
 				this.Filter_Num=1;
 				this.D_Title="Input Size";
 				this.Width=p1;
@@ -329,10 +377,25 @@
 			Btn_Add.setAttribute("id","Btn_Add"+String(this.num));
 			Btn_Add.style.top = String(this.label.length*3+6+5)+'vh';
 			Btn_Add.onclick = function() {Butten_Add(order0layer+1)};
+			var Btn_Del = document.createElement("button");
+			Btn_Del.innerHTML = "Del()|";
+			Btn_Del.setAttribute("class","Btn");
+			Btn_Del.setAttribute("id","Btn_Del"+String(this.num));
+			Btn_Del.style.top = String(this.label.length*3+6+8)+'vh';
+			Btn_Del.onclick = function() {Butten_Del(order0layer)};
 			Iu.appendChild(Btn_Gen);
 			Iu.appendChild(Btn_Add);
+			Iu.appendChild(Btn_Del);
 			Iu.appendChild(Bk);
 			IA.appendChild(Iu);
+		}
+		Delete(){
+			var Removing_Element = document.getElementById("Unit"+String(this.num));
+			Removing_Element.remove();
+			for (var i=this.namae;i<Inp.length-1;i++) {
+                Inp[i]=Inp[i+1];
+            }
+			Inp.pop();
 		}
 	}
     class Node{
@@ -340,7 +403,7 @@
 			this.wpx=wpx;
 			this.hpx=hpx;
 			this.fw=Width_Deter(filter);//Front Side Width
-			Total_Length += this.fw;
+			Total_Length += this.fw + GAP;
 			this.fh=Default_Height*(hpx/Inp[0].Height);//Front Side Height
 			this.uh=this.fh/2;//Up Side Height
 			this.ra=Default_Rotate_Angle;//Rotate Angle
@@ -351,6 +414,9 @@
 			this.tp=tp;//Process Type
 		}
 		Gen(){
+			this.fh=Default_Height*(this.hpx/Inp[0].Height);//Front Side Height
+			this.uh=this.fh/2;//Up Side Height
+			this.t=Base_Line-this.uh-this.fh/2;//top
 			this.w=this.uh*Math.tan(Math.PI*(this.ra/180));
 			//Out_Frame Generation
 			var Out_Frame = document.createElement("div");
@@ -392,10 +458,46 @@
 		}
 		Delete(){
 			var Removing_Element = document.getElementById("Out_Frame"+this.idn);
+			Total_Length = Total_Length-GAP-this.fw;
 			Removing_Element.remove();
+			for (var i=this.namae;i<Anima.length-1;i++) {
+                Anima[i]=Anima[i+1];
+            }
+			Anima.pop();
 		}
 	}
-	Inp[0] = new Input("Input",256,192,0,0,5,0);
+	Inp[0] = new Input("Input",256,192,0,0,0);
 	Inp[0].Gen();
+	/*
+	Inp[0] = new Input("Input",256,192,0,0,0);
+	Inp[1] = new Input("Conv",1,3,1,0,1);
+	Inp[2] = new Input("Conv",1,3,1,0,2);
+	Inp[3] = new Input("Conv",1,3,1,0,3);
+	Inp[4] = new Input("Conv",1,3,1,0,4);
+	Inp[5] = new Input("Conv",1,3,1,0,5);
+	Inp[6] = new Input("Conv",1,3,1,0,6);
+	Inp[7] = new Input("Conv",1,3,1,0,7);
+	Inp[8] = new Input("Conv",1,3,1,0,8);
+	Inp[9] = new Input("Conv",1,3,1,0,9);
+	Inp[10] = new Input("Conv",1,3,1,0,10);
+	Inp[11] = new Input("Conv",1,3,1,0,11);
+	Inp[12] = new Input("Conv",1,3,1,0,12);
+	Inp[13] = new Input("Conv",1,3,1,0,13);
+	Inp[14] = new Input("Conv",1,3,1,0,14);
+	Inp[15] = new Input("Conv",1,3,1,0,15);
+	Inp[16] = new Input("Conv",1,3,1,0,16);
+	Inp[17] = new Input("Conv",1,3,1,0,17);
+	Inp[18] = new Input("Conv",1,3,1,0,18);
+	Inp[19] = new Input("Conv",1,3,1,0,19);
+	Inp[20] = new Input("Conv",1,3,1,0,20);
+	Inp[21] = new Input("Conv",1,3,1,0,21);
+	Inp[22] = new Input("Conv",1,3,1,0,22);
+	Inp[23] = new Input("Conv",1,3,1,0,23);
+	Inp[24] = new Input("Conv",1,3,1,0,24);
+	for (var i=0;i<Inp.length;i++) {
+		Inp[i].Gen();
+        Button_Gen(i);
+    }
+	*/
 </script>
 </html>
