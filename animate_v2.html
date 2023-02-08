@@ -137,6 +137,33 @@
 			height: 1px;
 			width: 12vh;
 		}
+		.x0{
+			position: relative;
+			top: -50px;
+			left: 200px;
+		}
+		.x1{
+			padding:0px;
+			margin:0px;
+			left:0px;
+			top:0px;
+			position:absolute;
+			width:10px;
+			height:10px;
+			border-top:4px solid rgb(0,0,0);
+			transform: rotate(-45deg);
+		}
+		.x2{	
+			padding:0px;
+			margin:0px;
+			left:0px;
+			top:0px;
+			position:absolute;
+			width:10px;
+			height:10px;
+			border-top:4px solid rgb(0,0,0);
+			transform: rotate(45deg);
+		}
 	</style>
 
 </head>
@@ -420,6 +447,28 @@
 			Btn_Del.setAttribute("id","Btn_Del"+String(this.num));
 			Btn_Del.style.top = String(this.label.length*3+6+8)+'vh';
 			Btn_Del.onclick = function() {Button_Del(order0layer)};
+			//Del Sign Gen
+			var x0 = document.createElement("div");
+			x0.setAttribute("class","x0");
+			x0.setAttribute("id","x0"+String(this.num));
+			var xwh = Main_Height/75;
+			var x1 = document.createElement("div");
+			x1.setAttribute("class","x1");
+			x1.setAttribute("id","x1"+String(this.num));
+			x1.style.width = xwh+'px';
+			x1.style.height = xwh+'px';
+			x1.style.left = x3.offsetWidth-x1.offsetWidth/2-(2/4*Math.sqrt(2))+'px';
+			x1.style.left = 'px';
+			var x2 = document.createElement("div");
+			x2.setAttribute("class","x2");
+			x2.setAttribute("id","x2"+String(this.num));
+			x2.style.width = xwh+'px';
+			x2.style.height = xwh+'px';
+			x2.style.left=(parseInt(x1.style.left.slice(0,-2))-(x2.offsetWidth-4/4*Math.sqrt(2))/Math.sqrt(2))+'px';
+			console.log((parseInt(x1.style.left.slice(0,-2))));
+			x0.appendChild(x1);
+			x0.appendChild(x2);
+			Iu.appendChild(x0);
 			//Appending Merging
 			Iu.appendChild(Btn_Gen);
 			Iu.appendChild(Btn_Add);

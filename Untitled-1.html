@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RecepFCalc</title>
+</head>
+	
+<style>
+	.OutFrame{
+		top: 200px;
+		left: 400px;
+		position:relative;
+	}
+	.x1{
+		padding:0px;
+		margin:0px;
+		left:0px;
+		top:0px;
+		position:absolute;
+		width:10px;
+		height:10px;
+		border-top:2px solid rgb(0,0,0);
+		transform: rotate(-45deg);
+	}
+	.x2{
+		padding:0px;
+		margin:0px;
+		left:0px;
+		top:0px;
+		position:absolute;
+		width:10px;
+		height:10px;
+		border-top:2px solid rgb(0,0,0);
+		transform: rotate(45deg);
+	}
+	.x3{
+		position:absolute;
+		width:500px;
+		height:500px;
+		top:150px;
+		background-color:blue;
+	}
+</style>
+
+<body>
+	<div class="OutFrame">
+		<div class="x1" id="x1"></div>
+		<div class="x2" id="x2"></div>
+		<div class="x3" id="x3"></div>
+	</div>
+</body>
+<script>
+	var x3 = document.getElementById("x3");
+	var x1 = document.getElementById("x1");
+	//x1.style.left=(500-x1.offsetWidth*Math.sqrt(2))+'px';
+	//x1.style.left = 500-75-(75+10)/2*Math.sqrt(2)+'px';
+	x1.style.left = x3.offsetWidth-x1.offsetWidth/2-(2/4*Math.sqrt(2))+'px';
+	var x2 = document.getElementById("x2");
+	x2.style.left=(parseInt(x1.style.left.slice(0,-2))-(x2.offsetWidth-2/4*Math.sqrt(2))/Math.sqrt(2))+'px';
+	//x2.style.left = 500+'px';
+	console.log(x1.border-top);
+</script>
+</html>
