@@ -128,6 +128,15 @@
 			position: absolute;
 			top: 150px;
 		}
+		#Line4IA{
+			position: relative;
+			top: 8vh;
+			left: 10vh;
+			z-index: -1;
+			border-top: 2px solid rgb(128,128,128);
+			height: 1px;
+			width: 12vh;
+		}
 	</style>
 
 </head>
@@ -136,69 +145,83 @@
 	<div id="Animation_Area">
 	</div>
 	<div id="Input_Area">
+		<div id="Line4IA"></div>
 	</div>
 </body>
 <script>
-	var num0conv = 0;
-	var num0pooling = 0;
-	var Mctr = -1;
-	var GAP = 100;
-	var GAPfIU = 20;
-	var Total_Length = 0;
-	const Main_Height = window.screen.availHeight;
-	const Main_Width = window.screen.availWidth;
-	var WidthPLayer = Main_Width/1000;
-	var Default_Height = Main_Height*0.20;
-	var Base_Line = Main_Height/2*0.55;
-	var Default_Rotate_Angle = 25;
+	var num0conv = 0;//Total Number of Conv Layers
+	var num0pooling = 0;//Total Number of Pooling Layers
+	var Mctr = -1;//Number of Total Layers
+	var GAP = 100;//Pixel Width Distance of Two Animate Layers
+	var GAPfIU = 20;//Vh Width Distance of Two Input Units
+	var Total_Length = 0;//Total Width Length for Animate Layers
+	const Main_Height = window.screen.availHeight;//Available Screen Height
+	const Main_Width = window.screen.availWidth;//Available Screen Width
+	var WidthPLayer = Main_Width/1000;//Width per Filter
+	var Default_Height = Main_Height*0.20;//Largest Displayed Height
+	var Base_Line = Main_Height/2*0.55;//Middle Line Top Value for Animate Area
+	var Default_Rotate_Angle = 25;//Default Rotation Angle for Animate Layers
 	var IA = document.getElementById("Input_Area");
 	var AA = document.getElementById("Animation_Area");
 	var Inp = [];
 	var Anima = [];
+	//for Generate Animate Layers
 	function Button_Gen(namae) {
+		//Update Information & Layer H, W Calculation
 		if (Inp[namae].type == 'Conv') {
             Inp[namae].Filter_Num = document.getElementById("Filter_Num_Input_Text"+String(Inp[namae].num)).value;
 			Inp[namae].Kernel_Size = parseInt(document.getElementById("Kernel_Size_Input_Text"+String(Inp[namae].num)).value);
 			Inp[namae].Stride = parseInt(document.getElementById("Stride_Input_Text"+String(Inp[namae].num)).value);
 			Inp[namae].Padding = parseInt(document.getElementById("Padding_Input_Text"+String(Inp[namae].num)).value);
 			Inp[namae].Width  = Conv_Calc(Inp[namae].Width,Inp[namae].Kernel_Size,Inp[namae].Stride,Inp[namae].Padding);
-			//((Inp[namae].Width-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
 			Inp[namae].Height  = Conv_Calc(Inp[namae].Height,Inp[namae].Kernel_Size,Inp[namae].Stride,Inp[namae].Padding);
-			//((Inp[namae].Height-Inp[namae].Kernel_Size+2*Inp[namae].Padding)/Inp[namae].Stride)+1;
         }
+		//New Layer Generation
 		Anima[namae] = new Node(Inp[namae].Width,Inp[namae].Height,Inp[namae].Filter_Num,100+100*namae,Inp[namae].num,namae,Inp[namae].type);
 		Anima[namae].Gen();
-		Position_Update();
+		Position_Update();//Position Updating
 	}
-	function Butten_Add(namae) {
-		if (Inp[namae]==undefined) {
+	//for Generate Input Layers
+	function Button_Add(namae) {
+		//Different Addition Logic According to Position
+		if (Inp[namae]==undefined) {//Add at Tail
 			Inp[namae] = new Input("Conv",32,3,1,1,namae);
 			Inp[namae].Gen();
         }
-		else{
+		else{//Add in Middle
 			Inp.splice(namae,0,new Input("Conv",32,3,1,1,namae));
 			Inp[namae].Gen();
 			Position_Update_IU(namae+1);
 			Anima.splice(namae,0,0);
 		}
+		var Line4IA = document.getElementById("Line4IA");
+		Line4IA.style.width = Inp.length*14+(Inp.length-1)*6-2+'vh';
     }
-	function Butten_Del(namae) {
-        Anima[namae].Delete();
-		Position_Update();
+	//for Input and Animate Layer Delete
+	function Button_Del(namae) {
+		var Line4IA = document.getElementById("Line4IA");
+		Line4IA.style.width = (Inp.length-1)*14+(Inp.length-2)*6-2+'vh';
+		if(Anima[namae]!=undefined){
+			Anima[namae].Delete();
+			Position_Update();
+		}
 		Inp[namae].Delete();
 		Position_Update_IU(namae);
     }
+	//for Calculate the Convolution
 	function Conv_Calc(pw,ks,s,p) {
 		if(pw>=ks){
 			pw = ((pw-ks+2*p)/s)+1;
 			return pw;
 		}
-		else{
+		else{//Kernel Size Bigger than Pixel Size
 			alert("Unacceptable Kernel Size");
 			return -1;
 		}
 	}
+	//to Update Each Layers' Position After Adding New Layers
 	function Position_Update(){
+		//When Total Length too Big, to Cut Down the Length
 		if (Total_Length>=Main_Width*0.9) {
 			var tmp_times = 1;
             var tmp_Length = Total_Length;
@@ -222,13 +245,14 @@
             }
             else{
 				Anima[i].l = Anima[i-1].l+Anima[i-1].fw+GAP;
+				//Change the FH, UH, ,etc. ,Value After Layer Insertion
 				if (Anima[i].wpx != Conv_Calc(Anima[i-1].wpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding)) {
-					console.log(Anima[i].wpx);
 					Anima[i].wpx = Conv_Calc(Anima[i-1].wpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding);
+					Inp[i].Width = Anima[i].wpx;
 					Anima[i].hpx = Conv_Calc(Anima[i-1].hpx,Inp[i].Kernel_Size,Inp[i].Stride,Inp[i].Padding);
-					console.log(Anima[i].wpx);
-					Updating_Layer.remove();
-					Anima[i].Gen();
+					Inp[i].Height = Anima[i].hpx;
+					Updating_Layer.remove();//Removing Generated Layer
+					Anima[i].Gen();//Re-Gen
 					Updating_Layer = document.getElementById("Out_Frame"+String(Anima[i].idn));
                 }
 			}
@@ -237,13 +261,20 @@
 			}
         }
     }
+	//to Update Units' Position After Adding New Units
 	function Position_Update_IU(namae) {
         for (var i=namae;i<Inp.length;i++) {
 			var Updating_Layer_IU = document.getElementById("Unit"+String(Inp[i].num));
             Inp[i].l = Inp[i-1].l+GAPfIU;
 			Updating_Layer_IU.style.left = Inp[i].l+'vh';
+			var Tail = document.getElementById("Tail"+String(Inp[i].num));
+			//Tail Text Adjustment
+			if(parseInt(Tail.innerHTML.slice(6)) != i){
+				Tail.innerHTML = "Layer "+String(i);
+			}
         }
     }
+	//to Determine the FW Value for Each Animate Layer According to the Number of Filters
 	function Width_Deter(filter){
 		if(filter<10){
 			filter = 1;
@@ -265,10 +296,11 @@
 	}
 	class Input{
 		constructor(tp,p1,p2,p3,p4,namae){
-			Mctr += 1;
-			this.type=tp;
-			this.num=Mctr;
-			this.namae=namae;
+			Mctr += 1;//Total Layer Count
+			this.type=tp;//Type: Input, Conv, Pooling
+			this.num=Mctr;//Id for this Layer
+			this.namae=namae;//Order for this Layer
+			//If Type: Conv
 			if (tp=="Conv") {
 				this.l=Inp[this.namae-1].l+GAPfIU;
 				this.Width = Inp[this.namae-1].Width;
@@ -290,6 +322,7 @@
 				this.dft[2]=1;
 				this.dft[3]=0;
             }
+			//If Type: Pooling
 			else if (tp=="Pooling") {
 				this.l=Inp[this.namae-1].l+GAPfIU;
 				num0pooling+=0;
@@ -307,8 +340,9 @@
 				this.dft[1]=1;
 				this.dft[2]=0;
             }
+			//If Type: Input
 			else if (tp=="Input") {
-				this.l=5;
+				this.l=10;
 				this.Filter_Num=1;
 				this.D_Title="Input Size";
 				this.Width=p1;
@@ -325,6 +359,7 @@
 			}
 		}
 		Gen(){
+			//Basic Frame Generation
 			var Iu = document.createElement("div");
 			Iu.setAttribute("class","Input_Unit");
 			Iu.setAttribute("id","Unit"+String(this.num));
@@ -343,6 +378,7 @@
 			input.value = this.D_Title;
 			It.appendChild(input);
 			Bk.appendChild(It);
+			//Parameter Frame Generation & Default Value Settings
 			for (var i=0;i<this.label.length;i++) {
                 var p = document.createElement("div");
 				p.setAttribute("class","Input_Details");
@@ -362,8 +398,9 @@
 			var Tail = document.createElement("div");
 			Tail.setAttribute("class","Input_Tail");
 			Tail.setAttribute("id","Tail"+String(this.num));
-			Tail.innerHTML = "Layer "+String(this.num);
+			Tail.innerHTML = "Layer "+String(this.namae);
 			Bk.appendChild(Tail);
+			//Button Generation & Click Function Setting
 			var Btn_Gen = document.createElement("button");
 			Btn_Gen.innerHTML = "Gen()^";
 			Btn_Gen.setAttribute("class", "Btn");
@@ -376,13 +413,14 @@
 			Btn_Add.setAttribute("class", "Btn");
 			Btn_Add.setAttribute("id","Btn_Add"+String(this.num));
 			Btn_Add.style.top = String(this.label.length*3+6+5)+'vh';
-			Btn_Add.onclick = function() {Butten_Add(order0layer+1)};
+			Btn_Add.onclick = function() {Button_Add(order0layer+1)};
 			var Btn_Del = document.createElement("button");
 			Btn_Del.innerHTML = "Del()|";
 			Btn_Del.setAttribute("class","Btn");
 			Btn_Del.setAttribute("id","Btn_Del"+String(this.num));
 			Btn_Del.style.top = String(this.label.length*3+6+8)+'vh';
-			Btn_Del.onclick = function() {Butten_Del(order0layer)};
+			Btn_Del.onclick = function() {Button_Del(order0layer)};
+			//Appending Merging
 			Iu.appendChild(Btn_Gen);
 			Iu.appendChild(Btn_Add);
 			Iu.appendChild(Btn_Del);
@@ -400,8 +438,8 @@
 	}
     class Node{
 		constructor(wpx,hpx,filter,l,idn,namae,tp){
-			this.wpx=wpx;
-			this.hpx=hpx;
+			this.wpx=wpx;//Pixel Information for Width
+			this.hpx=hpx;//Pixel Information for Height
 			this.fw=Width_Deter(filter);//Front Side Width
 			Total_Length += this.fw + GAP;
 			this.fh=Default_Height*(hpx/Inp[0].Height);//Front Side Height
@@ -468,36 +506,5 @@
 	}
 	Inp[0] = new Input("Input",256,192,0,0,0);
 	Inp[0].Gen();
-	/*
-	Inp[0] = new Input("Input",256,192,0,0,0);
-	Inp[1] = new Input("Conv",1,3,1,0,1);
-	Inp[2] = new Input("Conv",1,3,1,0,2);
-	Inp[3] = new Input("Conv",1,3,1,0,3);
-	Inp[4] = new Input("Conv",1,3,1,0,4);
-	Inp[5] = new Input("Conv",1,3,1,0,5);
-	Inp[6] = new Input("Conv",1,3,1,0,6);
-	Inp[7] = new Input("Conv",1,3,1,0,7);
-	Inp[8] = new Input("Conv",1,3,1,0,8);
-	Inp[9] = new Input("Conv",1,3,1,0,9);
-	Inp[10] = new Input("Conv",1,3,1,0,10);
-	Inp[11] = new Input("Conv",1,3,1,0,11);
-	Inp[12] = new Input("Conv",1,3,1,0,12);
-	Inp[13] = new Input("Conv",1,3,1,0,13);
-	Inp[14] = new Input("Conv",1,3,1,0,14);
-	Inp[15] = new Input("Conv",1,3,1,0,15);
-	Inp[16] = new Input("Conv",1,3,1,0,16);
-	Inp[17] = new Input("Conv",1,3,1,0,17);
-	Inp[18] = new Input("Conv",1,3,1,0,18);
-	Inp[19] = new Input("Conv",1,3,1,0,19);
-	Inp[20] = new Input("Conv",1,3,1,0,20);
-	Inp[21] = new Input("Conv",1,3,1,0,21);
-	Inp[22] = new Input("Conv",1,3,1,0,22);
-	Inp[23] = new Input("Conv",1,3,1,0,23);
-	Inp[24] = new Input("Conv",1,3,1,0,24);
-	for (var i=0;i<Inp.length;i++) {
-		Inp[i].Gen();
-        Button_Gen(i);
-    }
-	*/
 </script>
 </html>
