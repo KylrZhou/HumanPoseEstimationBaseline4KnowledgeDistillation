@@ -137,32 +137,41 @@
 			height: 1px;
 			width: 12vh;
 		}
-		.x0{
-			position: relative;
-			top: -50px;
-			left: 200px;
+		.x12f{
+			position: absolute;
+			z-index: -1;
 		}
 		.x1{
 			padding:0px;
 			margin:0px;
 			left:0px;
-			top:0px;
-			position:absolute;
-			width:10px;
-			height:10px;
-			border-top:4px solid rgb(0,0,0);
+			top:0px
+			position: absolute;
+			width:15px;
+			height:15px;
+			border-top:2px solid rgb(64,64,64);
 			transform: rotate(-45deg);
+			z-index: -1;
 		}
-		.x2{	
+		.x2{
 			padding:0px;
 			margin:0px;
 			left:0px;
 			top:0px;
-			position:absolute;
-			width:10px;
-			height:10px;
-			border-top:4px solid rgb(0,0,0);
+			position: absolute;
+			width:15px;
+			height:15px;
+			border-top:2px solid rgb(64,64,64);
 			transform: rotate(45deg);
+			z-index: -1;
+		}
+		.x3{
+			padding:0px;
+			margin:0px;
+			position: absolute;
+			background: none;
+			border: none;
+			z-index:1;
 		}
 	</style>
 
@@ -192,6 +201,7 @@
 	var AA = document.getElementById("Animation_Area");
 	var Inp = [];
 	var Anima = [];
+	var num2namae = [];
 	//for Generate Animate Layers
 	function Button_Gen(namae) {
 		//Update Information & Layer H, W Calculation
@@ -292,6 +302,8 @@
 	function Position_Update_IU(namae) {
         for (var i=namae;i<Inp.length;i++) {
 			var Updating_Layer_IU = document.getElementById("Unit"+String(Inp[i].num));
+			Inp[i].namae = i
+			num2namae[Inp[i].num] = i;
             Inp[i].l = Inp[i-1].l+GAPfIU;
 			Updating_Layer_IU.style.left = Inp[i].l+'vh';
 			var Tail = document.getElementById("Tail"+String(Inp[i].num));
@@ -326,6 +338,7 @@
 			Mctr += 1;//Total Layer Count
 			this.type=tp;//Type: Input, Conv, Pooling
 			this.num=Mctr;//Id for this Layer
+			num2namae[Mctr] = namae;
 			this.namae=namae;//Order for this Layer
 			//If Type: Conv
 			if (tp=="Conv") {
@@ -433,46 +446,48 @@
 			Btn_Gen.setAttribute("class", "Btn");
 			Btn_Gen.setAttribute("id","Btn_Gen"+String(this.num));
 			Btn_Gen.style.top = String(this.label.length*3+6+2)+'vh';
-			var order0layer = this.namae;
-			Btn_Gen.onclick = function() {Button_Gen(order0layer)};
+			var order0layer = this.num;
+			Btn_Gen.onclick = function() {Button_Gen(num2namae[order0layer])};
 			var Btn_Add = document.createElement("button");
 			Btn_Add.innerHTML = "Add()->";
 			Btn_Add.setAttribute("class", "Btn");
 			Btn_Add.setAttribute("id","Btn_Add"+String(this.num));
 			Btn_Add.style.top = String(this.label.length*3+6+5)+'vh';
-			Btn_Add.onclick = function() {Button_Add(order0layer+1)};
-			var Btn_Del = document.createElement("button");
-			Btn_Del.innerHTML = "Del()|";
-			Btn_Del.setAttribute("class","Btn");
-			Btn_Del.setAttribute("id","Btn_Del"+String(this.num));
-			Btn_Del.style.top = String(this.label.length*3+6+8)+'vh';
-			Btn_Del.onclick = function() {Button_Del(order0layer)};
+			Btn_Add.onclick = function() {Button_Add(num2namae[order0layer]+1)};
 			//Del Sign Gen
-			var x0 = document.createElement("div");
-			x0.setAttribute("class","x0");
-			x0.setAttribute("id","x0"+String(this.num));
-			var xwh = Main_Height/75;
-			var x1 = document.createElement("div");
-			x1.setAttribute("class","x1");
-			x1.setAttribute("id","x1"+String(this.num));
-			x1.style.width = xwh+'px';
-			x1.style.height = xwh+'px';
-			x1.style.left = x3.offsetWidth-x1.offsetWidth/2-(2/4*Math.sqrt(2))+'px';
-			x1.style.left = 'px';
-			var x2 = document.createElement("div");
-			x2.setAttribute("class","x2");
-			x2.setAttribute("id","x2"+String(this.num));
-			x2.style.width = xwh+'px';
-			x2.style.height = xwh+'px';
-			x2.style.left=(parseInt(x1.style.left.slice(0,-2))-(x2.offsetWidth-4/4*Math.sqrt(2))/Math.sqrt(2))+'px';
-			console.log((parseInt(x1.style.left.slice(0,-2))));
-			x0.appendChild(x1);
-			x0.appendChild(x2);
-			Iu.appendChild(x0);
+			//if (this.namae!=0) {
+				var x12f = document.createElement("div");
+				x12f.setAttribute("class","x12f");
+				x12f.setAttribute("id","x12f"+String(this.num));
+				x12f.style.left = 14+'vh';
+				x12f.style.top = -1+'vh';
+				var x1 = document.createElement("div");
+				x1.setAttribute("class","x1");
+				x1.setAttribute("id","x1"+String(this.num));
+				x1.style.width = Main_Height/80+'px';
+				x1.style.height = Main_Height/80+'px';
+				var x2 = document.createElement("div");
+				x2.setAttribute("class","x2");
+				x2.setAttribute("id","x2"+String(this.num));
+				x2.style.width = Main_Height/80+'px';
+				x2.style.height = Main_Height/80+'px';
+				x2.style.left = -(Main_Height/80)/2*Math.sqrt(2)+'px';
+				var x3 = document.createElement("button");
+				x3.setAttribute("class","x3");
+				x3.setAttribute("id","x3"+String(this.num));
+				x3.style.width = Main_Height/80+'px';
+				x3.style.height = Main_Height/80+'px';
+				x3.style.left = -(Main_Height/80)/4*Math.sqrt(2)+'px';
+				x3.style.top = -(Main_Height/80)/4*Math.sqrt(2)+'px';
+				x3.onclick = function() {Button_Del(num2namae[order0layer])}
+				x12f.appendChild(x3);
+				x12f.appendChild(x1);
+				x12f.appendChild(x2);
+				Iu.appendChild(x12f);
+			//}
 			//Appending Merging
 			Iu.appendChild(Btn_Gen);
 			Iu.appendChild(Btn_Add);
-			Iu.appendChild(Btn_Del);
 			Iu.appendChild(Bk);
 			IA.appendChild(Iu);
 		}
