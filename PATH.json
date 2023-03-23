@@ -1,0 +1,5 @@
+{"ROOT" : "/root/autodl-tmp/Baseline/data/coco/",
+ "ValAnn"   : "annotations/person_keypoints_val2017.json",
+ "ValImg"          : "images/val2017",
+ "TrainAnn" : "annotations/person_keypoints_train2017.json",
+ "TrainImg"        : "images/train2017"}
