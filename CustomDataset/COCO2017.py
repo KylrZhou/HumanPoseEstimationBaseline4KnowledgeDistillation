@@ -33,7 +33,6 @@ class COCO2017Keypoint(Dataset):
         bbox.append(int(anno_tmp['bbox'][1]))
         bbox.append(int(anno_tmp['bbox'][0] + anno_tmp['bbox'][2]))
         bbox.append(int(anno_tmp['bbox'][1] + anno_tmp['bbox'][3]))
-        #for i in range(int(len(anno_tmp['keypoints'])/3)):
         num_of_keypoints = int(len(anno_tmp['keypoints'])/3)
         for i in range(num_of_keypoints):
             tmp = [anno_tmp['keypoints'][i*3],anno_tmp['keypoints'][i*3+1], anno_tmp['keypoints'][i*3+2]]
@@ -50,13 +49,17 @@ class COCO2017Keypoint(Dataset):
                 anno['kweights'].append(0)
         img = Image.open(os.path.join(self.img_path, 
                                       self.api.loadImgs(ids = anno_tmp['image_id'])[0]['file_name']))
+        if img.mode == 'L':
+            img = img.convert('RGB')
         img = np.array(img.crop((bbox[0], bbox[1], bbox[2], bbox[3])))
         if self.transforms is not None:
             transformed = self.transforms(image = img, keypoints = anno['keypoints'])
             img = transformed['image']
             anno['keypoints'] = transformed['keypoints']
         ToTensor = T.ToTensor()
+        Normalize = T.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
         img = ToTensor(img)
+        #img = Normalize(img)
         return img, anno
     
     def __len__(self):
