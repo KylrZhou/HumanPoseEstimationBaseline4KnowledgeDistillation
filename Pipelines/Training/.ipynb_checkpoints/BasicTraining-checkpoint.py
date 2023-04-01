@@ -12,6 +12,8 @@ def BasicTraining(Dataset=None,#
                   Backbone=None, BackbonePTH=None,#
                   Neck=None, NeckPTH=None,#
                   Head=None, HeadPTH=None,#
+                  PostProcess=None,
+                  GTPreProcess=None,
                   Epochs=None,#
                   Criterion=None,#
                   Metric4Train=None,#
@@ -102,7 +104,11 @@ def BasicTraining(Dataset=None,#
             Optimizer.zero_grad()
             target = anno['keypoints'].to(Device)
             target_weight = anno['kweights'].to(Device)
+            if GTPreProcess is not None:
+                anno = GTPreProcess.MAIN(target, target_weight)
             output = Model(img)
+            if PostProcess is not None:
+                output = PostProcess.MAIN(output)
             loss = Criterion(output, target, target_weight)
             loss.backward()
             LOG['LOSS'] = loss
