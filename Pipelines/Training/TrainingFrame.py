@@ -7,7 +7,7 @@ import sys
 sys.path.append('../..')
 from utils.model.ModelMerge import ModelMerge
 
-def BasicTraining(Dataset=None,#
+def TrainingFrame(Dataset=None,#
                   ValDataset=None,#
                   Backbone=None, BackbonePTH=None,#
                   Neck=None, NeckPTH=None,#
@@ -129,3 +129,5 @@ def BasicTraining(Dataset=None,#
                 loggr.update(k, v)
         
             loggr.wrt()
+            
+        
