@@ -33,7 +33,7 @@ def ModelMerge(Backbone, Neck, Head, bypass = None):
     if bypass != None:
         return eval(f'{bypass}')
     elif Neck != None:
-        return MergeBNH(Backbone, Neck, Head)
+        return ModelMergeBNH(Backbone, Neck, Head)
     elif Head != None:
-        return MergeBH(Backbone, Head)
+        return ModelMergeBH(Backbone, Head)
     return Backbone

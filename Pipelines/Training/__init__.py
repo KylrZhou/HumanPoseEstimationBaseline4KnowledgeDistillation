@@ -1,6 +1,6 @@
 from .BasicTraining import BasicTraining
-from .TrainingFrame import TrainingFrame
+from .TrainUnit import TrainUnit
 
 __all__ = [
-    'BasicTraining', 'TrainingFrame'
+    'BasicTraining', 'TrainUnit'
 ]

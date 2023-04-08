@@ -53,9 +53,23 @@ class COCO2017Keypoint(Dataset):
             img = img.convert('RGB')
         img = np.array(img.crop((bbox[0], bbox[1], bbox[2], bbox[3])))
         if self.transforms is not None:
-            transformed = self.transforms(image = img, keypoints = anno['keypoints'])
-            img = transformed['image']
-            anno['keypoints'] = transformed['keypoints']
+            #######
+            try:
+                transformed = self.transforms(image = img, keypoints = anno['keypoints'])
+                img = transformed['image']
+                anno['keypoints'] = transformed['keypoints']
+            except:
+                with open('/root/autodl-tmp/debug.txt', 'w') as f:
+                    f.write(str(bbox[0]))
+                    f.write(' , ')
+                    f.write(str(bbox[1]))
+                    f.write(' , ')
+                    f.write(str(bbox[2]))
+                    f.write(' , ')
+                    f.write(str(bbox[3]))
+                    f.write('\n')
+                    f.write(os.path.join(self.img_path, self.api.loadImgs(ids = anno_tmp['image_id'])[0]['file_name']))
+                return
         ToTensor = T.ToTensor()
         Normalize = T.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
         img = ToTensor(img)

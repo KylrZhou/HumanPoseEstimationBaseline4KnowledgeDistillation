@@ -5,16 +5,16 @@ class loggr():
         self.Write2Path = Write2Path
         self.data = {}
         
-    def update(key, data):
+    def update(self, key, data):
         self.data[key] = data
             
-    def print2terminal(strs):
+    def print2terminal(self,strs):
         text = ''
         for k, v in strs.items():
             text += f'{k} : {v} '
         print(strs)
     
-    def wrt():
+    def wrt(self):
         if self.Write2Path is not None:
             strs = {}
             strs['Mode'] = self.data['MODE']
@@ -22,9 +22,9 @@ class loggr():
             strs['Data_time'] = self.data['DATATIME']
             strs['Batch_time'] = self.data['BATCHTIME']
             for k, v in self.data['LOSS'].items():
-                strs[k] = v
+                strs[k] = v.item()
             for k, v in self.data['ACC'].items():
-                strs[k] = v
+                strs[k] = v.item()
             with open(self.Write2Path, 'a') as f:
                 dump(strs,f)
         self.print2terminal(strs)

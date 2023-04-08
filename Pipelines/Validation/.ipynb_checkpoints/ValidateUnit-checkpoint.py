@@ -1,16 +1,16 @@
 from time import time
-from torch import torch.no_grad
+from torch import no_grad
 
 def ValidateUnit(Model,
                  Dataset,
                  Device,
+                 Metric,
                  GTPreProcess = None,
                  PostProcess = None,
-                 Criterion, = None,
-                 Metric):
+                 Criterion = None):
     # Model Mode Train
     Model.eval()
-    with torch.no_grad()
+    with no_grad():
         Timer1 = time()
         LOG = {}
         for idx, (img, anno) in enumerate(Dataset): 
