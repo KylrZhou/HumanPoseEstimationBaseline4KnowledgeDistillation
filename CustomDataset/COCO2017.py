@@ -1,80 +1,108 @@
 import os
-import cv2
+import sys
 import json
+import torch
 import numpy as np
 from PIL import Image
-#import albumentations as A
 from pycocotools.coco import COCO
-import torchvision.transforms as T
 from torch.utils.data import Dataset
-#from albumentations.pytorch.transforms import ToTensorV2
+import torchvision.transforms.functional as F
+from torchvision.transforms.functional import pil_to_tensor
+
+sys.path.append('../')
+from utils import HeatmapGenerate
+
+def serialanno2annoweight(ipt):
+    kypt = [[ipt[0], ipt[1]],
+           [ipt[3], ipt[4]],
+           [ipt[6], ipt[7]],
+           [ipt[9], ipt[10]],
+           [ipt[12], ipt[13]],
+           [ipt[15], ipt[16]],
+           [ipt[18], ipt[19]],
+           [ipt[21], ipt[22]],
+           [ipt[24], ipt[25]],
+           [ipt[27], ipt[28]],
+           [ipt[30], ipt[31]],
+           [ipt[33], ipt[34]],
+           [ipt[36], ipt[37]],
+           [ipt[39], ipt[40]],
+           [ipt[42], ipt[43]],
+           [ipt[45], ipt[46]],
+           [ipt[48], ipt[49]]]
+    wght = [ipt[2], ipt[5], ipt[8], ipt[11], ipt[14], ipt[17], ipt[20], ipt[23], ipt[26], ipt[29], ipt[32], ipt[35], ipt[38], ipt[41], ipt[44], ipt[47], ipt[50]]
+    return kypt, wght
+
+def ImgnKyptResizer(IMG=None, KYPT=None, WGHT=None, BBOX=None):
+    left = BBOX[0] - 1
+    up = BBOX[1] - 1
+    right = BBOX[0] + BBOX[2] + 1
+    bottom = BBOX[1] + BBOX[3] + 1
+    if len(IMG.size) < 3:
+        IMG = IMG.convert('RGB')
+    IMG = IMG.crop((left, up, right, bottom))
+    for i in range(len(WGHT)):
+        KYPT[i][0] = float(format(KYPT[i][0] - left, '.1f'))
+        KYPT[i][1] = float(format(KYPT[i][1] - up, '.1f'))
+        if KYPT[i][0] > 0 and KYPT[i][0] < BBOX[2]:
+            if KYPT[i][1] > 0 and KYPT[i][1] < BBOX[3]:
+                pass
+            else:
+                KYPT[i][0] = 0
+                KYPT[i][1] = 0
+                WGHT[i] = 0
+        else:
+            KYPT[i][0] = 0
+            KYPT[i][1] = 0
+            WGHT[i] = 0
+    return IMG, KYPT, WGHT
+
+def COCO2017Collatefn(batch):
+    img, anno = zip(*batch)
+    kypt, wght = zip(*anno)
+    kypt = torch.tensor(kypt, dtype = torch.float32)
+    wght = torch.tensor(wght, dtype = torch.uint8)
+    return torch.stack(img), (kypt, wght)
 
 class COCO2017Keypoint(Dataset):
-    def __init__(self, PATH, transforms = None, mode = 'Train'):
+    """
+    Params:
+        PATH (str): The path to your COCO2017 train dataset annotation
+        ANNMODE (bool): 0 stands for different format of annotation, 0 is coordinates and 1 is heatmap
+        TRANSFORM (Object.albumentations): Data augment api, currently albumentations is only support library 
+    """
+    def __init__(self, PATH, TRANSFORM = None, HEATMAPGEN = None):
         super(COCO2017Keypoint, self).__init__()
-        with open(PATH,'r') as f:
+        with open(PATH, 'r') as f:
             self.PATH = json.load(f)
-        if mode == 'Train':
-            self.api = COCO(annotation_file = os.path.join(self.PATH['ROOT'], self.PATH['TrainAnn']))
-            self.img_path = os.path.join(self.PATH['ROOT'],self.PATH['TrainImg']) 
-        elif mode == 'Val':
-            self.api = COCO(annotation_file = os.path.join(self.PATH['ROOT'], self.PATH['ValAnn']))
-            self.img_path = os.path.join(self.PATH['ROOT'],self.PATH['ValImg']) 
-        else:
-            raise Warning(f'Cannot Recognize Dataset Mode! \'{mode}\' Detected. It should be \'Train\' or \'Val\'')
-        self.ids = list(self.api.anns.keys())
-        self.transforms = transforms
+        self.coco_api = COCO(annotation_file = os.path.join(self.PATH['ROOT'], self.PATH['TrainAnn']))
+        self.img_path = os.path.join(self.PATH['ROOT'],self.PATH['TrainImg']) 
+        self.anno_ids = list(self.coco_api.getAnnIds(catIds=1))
+        self.transform = TRANSFORM
+        self.HeatmapGen = HEATMAPGEN
     
     def __getitem__(self, index):
-        anno_tmp = self.api.loadAnns(ids = self.ids[index])[0]
-        anno = {'keypoints' : [], 'kweights' : []}
-        bbox = []
-        bbox.append(int(anno_tmp['bbox'][0]))
-        bbox.append(int(anno_tmp['bbox'][1]))
-        bbox.append(int(anno_tmp['bbox'][0] + anno_tmp['bbox'][2]))
-        bbox.append(int(anno_tmp['bbox'][1] + anno_tmp['bbox'][3]))
-        num_of_keypoints = int(len(anno_tmp['keypoints'])/3)
-        for i in range(num_of_keypoints):
-            tmp = [anno_tmp['keypoints'][i*3],anno_tmp['keypoints'][i*3+1], anno_tmp['keypoints'][i*3+2]]
-            if tmp[2] == 0:                   
-                anno['keypoints'].append([0, 0])
-                anno['kweights'].append(0)
-            elif tmp[0] > bbox[0] and tmp[0] < bbox[2] and tmp[1] > bbox[1] and tmp[1] < bbox[3]:
-                tmp[0] -= bbox[0]
-                tmp[1] -= bbox[1]
-                anno['keypoints'].append([tmp[0], tmp[1]])
-                anno['kweights'].append(tmp[2])
-            else:                
-                anno['keypoints'].append([0, 0])
-                anno['kweights'].append(0)
-        img = Image.open(os.path.join(self.img_path, 
-                                      self.api.loadImgs(ids = anno_tmp['image_id'])[0]['file_name']))
-        if img.mode == 'L':
-            img = img.convert('RGB')
-        img = np.array(img.crop((bbox[0], bbox[1], bbox[2], bbox[3])))
-        if self.transforms is not None:
-            #######
-            try:
-                transformed = self.transforms(image = img, keypoints = anno['keypoints'])
-                img = transformed['image']
-                anno['keypoints'] = transformed['keypoints']
-            except:
-                with open('/root/autodl-tmp/debug.txt', 'w') as f:
-                    f.write(str(bbox[0]))
-                    f.write(' , ')
-                    f.write(str(bbox[1]))
-                    f.write(' , ')
-                    f.write(str(bbox[2]))
-                    f.write(' , ')
-                    f.write(str(bbox[3]))
-                    f.write('\n')
-                    f.write(os.path.join(self.img_path, self.api.loadImgs(ids = anno_tmp['image_id'])[0]['file_name']))
-                return
-        ToTensor = T.ToTensor()
-        Normalize = T.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
-        img = ToTensor(img)
-        #img = Normalize(img)
+        anno_info = self.coco_api.loadAnns(self.anno_ids[index])[0]
+        kypt, wght = serialanno2annoweight(anno_info['keypoints'])
+        bbox = anno_info['bbox']
+        img_info = self.img_path + '/' + self.coco_api.loadImgs(anno_info['image_id'])[0]['file_name']
+        img, kypt, wght = ImgnKyptResizer(IMG = Image.open(img_info), KYPT = kypt, WGHT = wght, BBOX = bbox)
+        if self.transform is not None:
+            img = self.transform(image = np.array(img, dtype = np.float32), keypoints = kypt)
+            kypt = img['keypoints']
+            img = img['image'] 
+            img = torch.tensor(img, dtype = torch.float32)
+            if len(img.shape) == 1:
+                img = torch.stack((img, img, img))
+            img = img.permute(2, 0, 1)
+        else:
+            img = pil_to_tensor(img)
+            if len(img.shape) == 1:
+                img = torch.stack((img, img, img))
+        if self.HeatmapGen is not None:
+            kypt = self.HeatmapGen.MAIN(kypt, wght)
+        anno = [kypt, wght]
         return img, anno
     
     def __len__(self):
-        return len(self.ids)
+        return len(self.anno_ids)

@@ -1,4 +1,4 @@
-{"ROOT" : "/root/autodl-tmp/",
+{"ROOT" : "/home/kylrzhou/Datasets/HumanPoseEstimation/",
  "ValAnn"   : "annotations/person_keypoints_val2017.json",
  "ValImg"          : "val2017",
  "TrainAnn" : "annotations/person_keypoints_train2017.json",

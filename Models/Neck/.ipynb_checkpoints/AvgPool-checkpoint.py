@@ -1,7 +1,7 @@
 from torch.nn import Module, AdaptiveAvgPool2d
 
 class GlobalAvgPool(Module):
-    def __init__(self, output_size, output_channels):
+    def __init__(self, output_channels):
         super(GlobalAvgPool, self).__init__()
         self.Pooling = AdaptiveAvgPool2d(output_size = (1,1))
         self.output_channels = output_channels
